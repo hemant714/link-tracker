@@ -41,8 +41,15 @@ app.use(limiter);
 // Database setup - use in-memory for Vercel
 const db = new sqlite3.Database(process.env.NODE_ENV === 'production' ? ':memory:' : './tracker.db');
 
+// Add error handling for database
+db.on('error', (err) => {
+  console.error('Database error:', err);
+});
+
 // Initialize database tables
 db.serialize(() => {
+  console.log('Initializing database tables...');
+  
   // Links table
   db.run(`CREATE TABLE IF NOT EXISTS links (
     id TEXT PRIMARY KEY,
@@ -51,7 +58,13 @@ db.serialize(() => {
     title TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     total_clicks INTEGER DEFAULT 0
-  )`);
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating links table:', err);
+    } else {
+      console.log('Links table created/verified successfully');
+    }
+  });
 
   // Clicks table
   db.run(`CREATE TABLE IF NOT EXISTS clicks (
@@ -64,7 +77,13 @@ db.serialize(() => {
     city TEXT,
     clicked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (link_id) REFERENCES links (id)
-  )`);
+  )`, (err) => {
+    if (err) {
+      console.error('Error creating clicks table:', err);
+    } else {
+      console.log('Clicks table created/verified successfully');
+    }
+  });
 });
 
 // Routes
@@ -74,12 +93,31 @@ app.get('/', (req, res) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Link Tracker API is running' });
+  // Test database connection
+  db.get('SELECT COUNT(*) as count FROM links', (err, result) => {
+    if (err) {
+      console.error('Health check database error:', err);
+      res.json({ 
+        status: 'error', 
+        message: 'Link Tracker API is running but database has issues',
+        error: err.message 
+      });
+    } else {
+      res.json({ 
+        status: 'ok', 
+        message: 'Link Tracker API is running',
+        database: 'connected',
+        links_count: result.count
+      });
+    }
+  });
 });
 
 // Create a new trackable link
 app.post('/api/links', (req, res) => {
   const { original_url, title } = req.body;
+  
+  console.log('Creating new link:', { original_url, title });
   
   if (!original_url) {
     return res.status(400).json({ error: 'Original URL is required' });
@@ -93,6 +131,7 @@ app.post('/api/links', (req, res) => {
     [linkId, original_url, shortCode, title || 'Untitled Link'],
     function(err) {
       if (err) {
+        console.error('Database error creating link:', err);
         if (err.message.includes('UNIQUE constraint failed')) {
           // Retry with a different short code
           const newShortCode = generateShortCode();
@@ -101,8 +140,10 @@ app.post('/api/links', (req, res) => {
             [linkId, original_url, newShortCode, title || 'Untitled Link'],
             function(err) {
               if (err) {
-                return res.status(500).json({ error: 'Failed to create link' });
+                console.error('Database error on retry:', err);
+                return res.status(500).json({ error: 'Failed to create link', details: err.message });
               }
+              console.log('Link created successfully with retry');
               res.json({
                 id: linkId,
                 short_code: newShortCode,
@@ -113,9 +154,10 @@ app.post('/api/links', (req, res) => {
             }
           );
         } else {
-          return res.status(500).json({ error: 'Failed to create link' });
+          return res.status(500).json({ error: 'Failed to create link', details: err.message });
         }
       } else {
+        console.log('Link created successfully');
         res.json({
           id: linkId,
           short_code: shortCode,
@@ -165,11 +207,14 @@ app.get('/r/:shortCode', (req, res) => {
 
 // Get all links
 app.get('/api/links', (req, res) => {
+  console.log('Fetching links from database...');
   db.all('SELECT * FROM links ORDER BY created_at DESC', (err, links) => {
     if (err) {
-      return res.status(500).json({ error: 'Failed to fetch links' });
+      console.error('Database error fetching links:', err);
+      return res.status(500).json({ error: 'Failed to fetch links', details: err.message });
     }
-    res.json(links);
+    console.log(`Found ${links ? links.length : 0} links`);
+    res.json(links || []);
   });
 });
 

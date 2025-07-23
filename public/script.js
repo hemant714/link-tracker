@@ -1,5 +1,22 @@
 // Link Tracker JavaScript
 
+// Show loading state
+function showLoadingState() {
+    console.log('Showing loading state...');
+    const linksContainer = document.getElementById('linksContainer');
+    if (linksContainer) {
+        linksContainer.innerHTML = `
+            <div class="text-center py-12">
+                <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Loading...</h3>
+                <p class="text-gray-500">Initializing application</p>
+            </div>
+        `;
+    }
+}
+
 // Tab functionality
 function showTab(tabName) {
     console.log('showTab called with:', tabName);
@@ -42,6 +59,9 @@ function showTab(tabName) {
 // Create link form
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, setting up event listeners');
+    
+    // Show loading state initially
+    showLoadingState();
     
     // Set up tab switching with event delegation
     const tabsContainer = document.querySelector('.flex.justify-center.mb-8');
@@ -235,13 +255,23 @@ async function loadLinks() {
         
     } catch (error) {
         console.error('Error loading links:', error);
+        let errorMessage = 'Failed to load links';
+        if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'Unable to connect to server. Please check your connection.';
+        } else if (error.message.includes('500')) {
+            errorMessage = 'Server error. Database may not be available.';
+        }
+        
         document.getElementById('linksContainer').innerHTML = `
             <div class="text-center py-12">
                 <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
                 </div>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">Error loading links</h3>
-                <p class="text-gray-500">${error.message}</p>
+                <p class="text-gray-500 mb-4">${errorMessage}</p>
+                <button onclick="loadLinks()" class="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors">
+                    <i class="fas fa-redo mr-2"></i>Retry
+                </button>
             </div>
         `;
     }
