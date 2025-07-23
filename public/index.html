@@ -95,6 +95,36 @@
                             </div>
                         </div>
 
+                        <div>
+                            <label for="customCode" class="block text-sm font-medium text-gray-700 mb-2">
+                                Custom Code (Optional)
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-code text-gray-400"></i>
+                                </div>
+                                <input type="text" id="customCode" 
+                                       class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                       placeholder="join-autonomous-car-masterclass">
+                                <p class="text-xs text-gray-500 mt-1">Leave empty for auto-generated code</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="source" class="block text-sm font-medium text-gray-700 mb-2">
+                                Source/Tracking (Optional)
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-chart-line text-gray-400"></i>
+                                </div>
+                                <input type="text" id="source" 
+                                       class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                       placeholder="src=dm, utm_source=email">
+                                <p class="text-xs text-gray-500 mt-1">Add tracking parameters like src=dm, utm_source=email</p>
+                            </div>
+                        </div>
+
                         <button type="submit" 
                                 class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-indigo-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
                             <i class="fas fa-magic mr-2"></i>
@@ -259,6 +289,12 @@
                                         <i class="fas fa-link mr-2"></i>
                                         <span class="font-mono text-xs bg-gray-100 px-2 py-1 rounded">${link.short_code}</span>
                                     </div>
+                                    ${link.source ? `
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-chart-line mr-2"></i>
+                                        <span class="text-xs bg-blue-100 px-2 py-1 rounded text-blue-700">${link.source}</span>
+                                    </div>
+                                    ` : ''}
                                 </div>
                                 
                                 <div class="flex space-x-2">
@@ -405,6 +441,8 @@
                     
                     const originalUrl = document.getElementById('originalUrl').value;
                     const title = document.getElementById('linkTitle').value;
+                    const customCode = document.getElementById('customCode').value;
+                    const source = document.getElementById('source').value;
                     
                     // Show loading state
                     const submitBtn = createLinkForm.querySelector('button[type="submit"]');
@@ -420,7 +458,9 @@
                             },
                             body: JSON.stringify({
                                 original_url: originalUrl,
-                                title: title
+                                title: title,
+                                custom_code: customCode,
+                                source: source
                             })
                         });
                         

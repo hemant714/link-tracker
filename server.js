@@ -20,8 +20,9 @@ console.log('Starting Link Tracker...');
 links.push({
   id: uuidv4(),
   original_url: 'https://wa.me/1234567890',
-  short_code: 'sample1',
-  title: 'Sample WhatsApp Link',
+  short_code: 'join-autonomous-car-masterclass',
+  title: 'Autonomous Car Masterclass WhatsApp Group',
+  source: 'src=dm',
   created_at: new Date().toISOString(),
   total_clicks: 0
 });
@@ -66,17 +67,30 @@ app.get('/api/test', (req, res) => {
 // Create a new trackable link
 app.post('/api/links', (req, res) => {
   try {
-    const { original_url, title } = req.body;
+    const { original_url, title, custom_code, source } = req.body;
     
     if (!original_url) {
       return res.status(400).json({ error: 'Original URL is required' });
     }
 
+    // Check if custom code is provided, otherwise generate one
+    let shortCode = custom_code;
+    if (!shortCode) {
+      shortCode = generateShortCode();
+    } else {
+      // Check if custom code already exists
+      const existingLink = links.find(l => l.short_code === shortCode);
+      if (existingLink) {
+        return res.status(400).json({ error: 'Custom code already exists. Please choose a different one.' });
+      }
+    }
+
     const newLink = {
       id: uuidv4(),
       original_url,
-      short_code: generateShortCode(),
+      short_code: shortCode,
       title: title || 'Untitled Link',
+      source: source || null,
       created_at: new Date().toISOString(),
       total_clicks: 0
     };
@@ -88,7 +102,8 @@ app.post('/api/links', (req, res) => {
       short_code: newLink.short_code,
       trackable_url: `${req.protocol}://${req.get('host')}/r/${newLink.short_code}`,
       original_url: newLink.original_url,
-      title: newLink.title
+      title: newLink.title,
+      source: newLink.source
     });
   } catch (error) {
     console.error('Error creating link:', error);
