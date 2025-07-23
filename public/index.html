@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Tracker - Track Your Links</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen font-sans">
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-link text-white text-sm"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-900">Link Tracker</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">Track • Analyze • Optimize</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h2 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                Track Your Links Like a Pro
+            </h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Create trackable links, monitor clicks, analyze traffic sources, and optimize your campaigns.
+            </p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex justify-center mb-8">
+            <div class="bg-white rounded-xl p-1 shadow-lg border border-gray-200">
+                <div class="flex space-x-1">
+                    <button class="tab px-6 py-3 rounded-lg font-medium transition-all duration-200 text-sm md:text-base bg-indigo-500 text-white" data-tab="create">
+                        <i class="fas fa-plus-circle mr-2"></i>
+                        Create Link
+                    </button>
+                    <button class="tab px-6 py-3 rounded-lg font-medium transition-all duration-200 text-sm md:text-base text-gray-600 hover:text-gray-900" data-tab="manage">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Manage Links
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Link Tab -->
+        <div id="create-tab" class="tab-content">
+            <div class="max-w-2xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-magic text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">Create New Trackable Link</h3>
+                        <p class="text-gray-600">Transform any URL into a powerful tracking link</p>
+                    </div>
+
+                    <form id="createLinkForm" class="space-y-6">
+                        <div>
+                            <label for="originalUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                                Original URL
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-link text-gray-400"></i>
+                                </div>
+                                <input type="url" id="originalUrl" 
+                                       class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                       placeholder="https://wa.me/1234567890" required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="linkTitle" class="block text-sm font-medium text-gray-700 mb-2">
+                                Link Title (Optional)
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-tag text-gray-400"></i>
+                                </div>
+                                <input type="text" id="linkTitle" 
+                                       class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                       placeholder="My WhatsApp Link">
+                            </div>
+                        </div>
+
+                        <button type="submit" 
+                                class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-indigo-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                            <i class="fas fa-magic mr-2"></i>
+                            Create Trackable Link
+                        </button>
+                    </form>
+
+                    <!-- Result Section -->
+                    <div id="linkResult" class="hidden mt-8 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+                        <div class="text-center">
+                            <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <h4 class="text-lg font-semibold text-green-800 mb-2">Link Created Successfully!</h4>
+                            <p class="text-green-700 mb-4">Your trackable URL is ready to share</p>
+                        </div>
+                        
+                        <div class="bg-white border border-green-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center justify-between">
+                                <code id="trackableUrl" class="text-sm text-green-800 font-mono break-all"></code>
+                                <button id="copyBtn" class="ml-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                                    <i class="fas fa-copy mr-1"></i>
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <p class="text-sm text-green-600">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Share this URL and track clicks, sources, and analytics
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Links Tab -->
+        <div id="manage-tab" class="tab-content hidden">
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-chart-line text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Your Links Dashboard</h3>
+                    <p class="text-gray-600">Monitor performance and analyze your trackable links</p>
+                </div>
+
+                <div id="linksContainer">
+                    <div class="flex items-center justify-center py-12">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-spinner fa-spin text-gray-400 text-xl"></i>
+                            </div>
+                            <p class="text-gray-500">Loading your links...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
