@@ -1,5 +1,17 @@
 // Link Tracker JavaScript
 
+// Test API connection
+async function testAPIConnection() {
+    try {
+        console.log('Testing API connection...');
+        const response = await fetch('/api/test');
+        const data = await response.json();
+        console.log('API test successful:', data);
+    } catch (error) {
+        console.error('API test failed:', error);
+    }
+}
+
 // Tab functionality
 function showTab(tabName) {
     console.log('showTab called with:', tabName);
@@ -42,6 +54,9 @@ function showTab(tabName) {
 // Create link form
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, setting up event listeners');
+    
+    // Test API connection
+    testAPIConnection();
     
     // Set up tab switching with event delegation
     const tabsContainer = document.querySelector('.flex.justify-center.mb-8');

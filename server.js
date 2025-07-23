@@ -38,39 +38,14 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Simple JSON-based storage for Vercel compatibility
-const DATA_FILE = process.env.NODE_ENV === 'production' ? '/tmp/data.json' : './data.json';
-
-// Initialize data storage
+// Simple in-memory storage for Vercel compatibility
 let data = {
   links: [],
   clicks: []
 };
 
-// Load data from file
-async function loadData() {
-  try {
-    const fileContent = await fs.readFile(DATA_FILE, 'utf8');
-    data = JSON.parse(fileContent);
-    console.log('Data loaded successfully');
-  } catch (error) {
-    console.log('No existing data file, starting fresh');
-    data = { links: [], clicks: [] };
-  }
-}
-
-// Save data to file
-async function saveData() {
-  try {
-    await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
-    console.log('Data saved successfully');
-  } catch (error) {
-    console.error('Error saving data:', error);
-  }
-}
-
-// Initialize data on startup
-loadData();
+// Initialize data storage
+console.log('Initializing in-memory data storage...');
 
 // Routes
 app.get('/', (req, res) => {
@@ -79,23 +54,37 @@ app.get('/', (req, res) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  // Test database connection
   res.json({ 
     status: 'ok', 
     message: 'Link Tracker API is running',
-    data_file: DATA_FILE
+    environment: process.env.NODE_ENV || 'development',
+    links_count: data.links.length,
+    clicks_count: data.clicks.length
+  });
+});
+
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'API is working!',
+    timestamp: new Date().toISOString(),
+    data: {
+      links: data.links.length,
+      clicks: data.clicks.length
+    }
   });
 });
 
 // Create a new trackable link
 app.post('/api/links', (req, res) => {
-  const { original_url, title } = req.body;
-  
-  console.log('Creating new link:', { original_url, title });
-  
-  if (!original_url) {
-    return res.status(400).json({ error: 'Original URL is required' });
-  }
+  try {
+    const { original_url, title } = req.body;
+    
+    console.log('Creating new link:', { original_url, title });
+    
+    if (!original_url) {
+      return res.status(400).json({ error: 'Original URL is required' });
+    }
 
   const linkId = uuidv4();
   const shortCode = generateShortCode();
@@ -110,7 +99,6 @@ app.post('/api/links', (req, res) => {
   };
 
   data.links.push(newLink);
-  saveData();
 
   res.json({
     id: linkId,
@@ -119,6 +107,10 @@ app.post('/api/links', (req, res) => {
     original_url,
     title: title || 'Untitled Link'
   });
+  } catch (error) {
+    console.error('Error creating link:', error);
+    res.status(500).json({ error: 'Failed to create link', details: error.message });
+  }
 });
 
 // Redirect endpoint
@@ -151,7 +143,6 @@ app.get('/r/:shortCode', (req, res) => {
   
   // Update total clicks
   link.total_clicks = (link.total_clicks || 0) + 1;
-  saveData();
 
   // Redirect to original URL
   res.redirect(link.original_url);
@@ -159,9 +150,14 @@ app.get('/r/:shortCode', (req, res) => {
 
 // Get all links
 app.get('/api/links', (req, res) => {
-  console.log('Fetching links from storage...');
-  console.log(`Found ${data.links.length} links`);
-  res.json(data.links);
+  try {
+    console.log('Fetching links from storage...');
+    console.log(`Found ${data.links.length} links`);
+    res.json(data.links);
+  } catch (error) {
+    console.error('Error fetching links:', error);
+    res.status(500).json({ error: 'Failed to fetch links', details: error.message });
+  }
 });
 
 // Get analytics for a specific link
@@ -226,7 +222,6 @@ app.delete('/api/links/:id', (req, res) => {
   // Remove the link
   data.links = data.links.filter(l => l.id !== id);
   
-  saveData();
   res.json({ message: 'Link deleted successfully' });
 });
 
