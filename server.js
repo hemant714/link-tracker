@@ -4,7 +4,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const fs = require('fs').promises;
+// Removed fs import since we're using in-memory storage
 const UserAgent = require('user-agents');
 const geoip = require('geoip-lite');
 
