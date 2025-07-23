@@ -66,7 +66,7 @@ app.get('/api/health', (req, res) => {
 // Test endpoint
 app.get('/api/test', (req, res) => {
   res.json({ 
-    message: 'API is working!',
+    message: 'API is working! (Updated for deployment)',
     timestamp: new Date().toISOString(),
     data: {
       links: data.links.length,
