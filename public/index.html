@@ -143,11 +143,14 @@
                         </div>
                         
                         <div class="bg-white border border-green-200 rounded-lg p-4 mb-4">
+                            <div class="mb-2">
+                                <label class="text-xs font-medium text-green-700">Trackable URL:</label>
+                            </div>
                             <div class="flex items-center justify-between">
-                                <code id="trackableUrl" class="text-sm text-green-800 font-mono break-all"></code>
-                                <button id="copyBtn" class="ml-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                                <code id="trackableUrl" class="text-sm text-green-800 font-mono break-all flex-1 mr-4"></code>
+                                <button id="copyBtn" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex-shrink-0">
                                     <i class="fas fa-copy mr-1"></i>
-                                    Copy
+                                    Copy URL
                                 </button>
                             </div>
                         </div>
@@ -227,17 +230,71 @@
         // Copy to clipboard function
         function copyToClipboard() {
             const trackableUrl = document.getElementById('trackableUrl').textContent;
-            navigator.clipboard.writeText(trackableUrl).then(() => {
-                const copyBtn = document.getElementById('copyBtn');
-                const originalText = copyBtn.innerHTML;
-                copyBtn.innerHTML = '<i class="fas fa-check mr-1"></i>Copied!';
-                copyBtn.classList.add('bg-green-600');
+            const copyBtn = document.getElementById('copyBtn');
+            const originalText = copyBtn.innerHTML;
+            
+            // Try modern clipboard API first
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(trackableUrl).then(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-check mr-1"></i>Copied!';
+                    copyBtn.classList.add('bg-green-600');
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.classList.remove('bg-green-600');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Clipboard API failed:', err);
+                    fallbackCopyTextToClipboard(trackableUrl, copyBtn, originalText);
+                });
+            } else {
+                // Fallback for older browsers or non-HTTPS
+                fallbackCopyTextToClipboard(trackableUrl, copyBtn, originalText);
+            }
+        }
+        
+        // Fallback copy function
+        function fallbackCopyTextToClipboard(text, copyBtn, originalText) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    copyBtn.innerHTML = '<i class="fas fa-check mr-1"></i>Copied!';
+                    copyBtn.classList.add('bg-green-600');
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.classList.remove('bg-green-600');
+                    }, 2000);
+                } else {
+                    copyBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>Failed!';
+                    copyBtn.classList.add('bg-red-600');
+                    
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.classList.remove('bg-red-600');
+                    }, 2000);
+                }
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+                copyBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i>Failed!';
+                copyBtn.classList.add('bg-red-600');
                 
                 setTimeout(() => {
                     copyBtn.innerHTML = originalText;
-                    copyBtn.classList.remove('bg-green-600');
+                    copyBtn.classList.remove('bg-red-600');
                 }, 2000);
-            });
+            }
+            
+            document.body.removeChild(textArea);
         }
 
         // Load links function
