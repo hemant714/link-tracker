@@ -1,22 +1,5 @@
 // Link Tracker JavaScript
 
-// Show loading state
-function showLoadingState() {
-    console.log('Showing loading state...');
-    const linksContainer = document.getElementById('linksContainer');
-    if (linksContainer) {
-        linksContainer.innerHTML = `
-            <div class="text-center py-12">
-                <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-spinner fa-spin text-indigo-500 text-xl"></i>
-                </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">Loading...</h3>
-                <p class="text-gray-500">Initializing application</p>
-            </div>
-        `;
-    }
-}
-
 // Tab functionality
 function showTab(tabName) {
     console.log('showTab called with:', tabName);
@@ -59,9 +42,6 @@ function showTab(tabName) {
 // Create link form
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, setting up event listeners');
-    
-    // Show loading state initially
-    showLoadingState();
     
     // Set up tab switching with event delegation
     const tabsContainer = document.querySelector('.flex.justify-center.mb-8');
