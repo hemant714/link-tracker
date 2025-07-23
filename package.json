@@ -1,7 +1,7 @@
 {
   "name": "link-tracker",
   "version": "1.0.0",
-  "description": "A link tracking service to monitor clicks and referral sources",
+  "description": "A simple link tracking service",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -11,17 +11,13 @@
   },
   "dependencies": {
     "express": "^4.18.2",
-    "uuid": "^9.0.1",
     "cors": "^2.8.5",
-    "helmet": "^7.1.0",
-    "express-rate-limit": "^7.1.5",
-    "user-agents": "^1.0.1359",
-    "geoip-lite": "^1.4.7"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
   },
-  "keywords": ["link-tracking", "analytics", "redirect", "whatsapp"],
+  "keywords": ["link-tracking", "analytics", "redirect"],
   "author": "Your Name",
   "license": "MIT"
 } 

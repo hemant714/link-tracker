@@ -1,48 +1,22 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const UserAgent = require('user-agents');
-const geoip = require('geoip-lite');
 
 const app = express();
 const PORT = process.env.PORT || 3003;
 
 // Middleware
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "https://cdn.tailwindcss.com"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
-            fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
-            imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'"],
-            frameSrc: ["'self'"],
-            objectSrc: ["'none'"],
-            upgradeInsecureRequests: []
-        }
-    }
-}));
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-});
-app.use(limiter);
 
 // Simple in-memory storage
 let links = [];
 let clicks = [];
 
 // Initialize with sample data
-console.log('Initializing application...');
+console.log('Starting Link Tracker...');
 links.push({
   id: uuidv4(),
   original_url: 'https://wa.me/1234567890',
@@ -72,7 +46,6 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok', 
     message: 'Link Tracker API is running',
-    environment: process.env.NODE_ENV || 'development',
     links_count: links.length,
     clicks_count: clicks.length
   });
@@ -119,7 +92,7 @@ app.post('/api/links', (req, res) => {
     });
   } catch (error) {
     console.error('Error creating link:', error);
-    res.status(500).json({ error: 'Failed to create link', details: error.message });
+    res.status(500).json({ error: 'Failed to create link' });
   }
 });
 
@@ -135,7 +108,6 @@ app.get('/r/:shortCode', (req, res) => {
   // Track the click
   const ip = req.ip || req.connection.remoteAddress;
   const referrer = req.headers.referer || req.headers.referrer || '';
-  const geo = geoip.lookup(ip);
   
   const newClick = {
     id: uuidv4(),
@@ -143,8 +115,6 @@ app.get('/r/:shortCode', (req, res) => {
     ip_address: ip,
     user_agent: req.headers['user-agent'],
     referrer: referrer,
-    country: geo ? geo.country : null,
-    city: geo ? geo.city : null,
     clicked_at: new Date().toISOString()
   };
 
@@ -158,12 +128,10 @@ app.get('/r/:shortCode', (req, res) => {
 // Get all links
 app.get('/api/links', (req, res) => {
   try {
-    console.log('Fetching links...');
-    console.log(`Found ${links.length} links`);
     res.json(links.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
   } catch (error) {
     console.error('Error fetching links:', error);
-    res.status(500).json({ error: 'Failed to fetch links', details: error.message });
+    res.status(500).json({ error: 'Failed to fetch links' });
   }
 });
 
@@ -195,23 +163,12 @@ app.get('/api/links/:id/analytics', (req, res) => {
       return acc;
     }, {});
 
-  // Top countries
-  const countries = linkClicks
-    .filter(click => click.country)
-    .reduce((acc, click) => {
-      acc[click.country] = (acc[click.country] || 0) + 1;
-      return acc;
-    }, {});
-
   res.json({
     link,
     analytics: {
       totalClicks,
       uniqueVisitors: uniqueIPs,
       referrers: Object.entries(referrers)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 10),
-      countries: Object.entries(countries)
         .sort(([,a], [,b]) => b - a)
         .slice(0, 10),
       recentClicks: linkClicks.slice(0, 20)
