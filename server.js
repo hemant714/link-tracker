@@ -38,8 +38,8 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Database setup
-const db = new sqlite3.Database('./tracker.db');
+// Database setup - use in-memory for Vercel
+const db = new sqlite3.Database(process.env.NODE_ENV === 'production' ? ':memory:' : './tracker.db');
 
 // Initialize database tables
 db.serialize(() => {
@@ -70,6 +70,11 @@ db.serialize(() => {
 // Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Link Tracker API is running' });
 });
 
 // Create a new trackable link
