@@ -104,7 +104,7 @@ DELETE /api/links/:id
 
 ## Database
 
-The application uses SQLite for data storage. The database file (`tracker.db`) is created automatically when you first run the application.
+The application uses in-memory storage for data. Data is stored in memory and will be reset when the server restarts.
 
 ### Tables
 
@@ -129,10 +129,7 @@ const PORT = process.env.PORT || 3000;
 
 ### Database Location
 
-The SQLite database is stored in `./tracker.db`. You can change this in `server.js`:
-```javascript
-const db = new sqlite3.Database('./your-custom-path.db');
-```
+The application uses in-memory storage. No database file is created. Data is stored in memory and will be reset when the server restarts.
 
 ## Deployment
 
