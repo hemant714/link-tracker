@@ -105,18 +105,33 @@ app.get('/r/:shortCode', (req, res) => {
     return res.status(404).send('Link not found');
   }
 
-  // Track the click
-  const ip = req.ip || req.connection.remoteAddress;
+  // Track the click with better IP detection
+  const ip = req.headers['x-forwarded-for'] || 
+             req.headers['x-real-ip'] || 
+             req.connection?.remoteAddress || 
+             req.socket?.remoteAddress || 
+             req.ip || 
+             'unknown';
+  
   const referrer = req.headers.referer || req.headers.referrer || '';
+  const userAgent = req.headers['user-agent'] || '';
   
   const newClick = {
     id: uuidv4(),
     link_id: link.id,
-    ip_address: ip,
-    user_agent: req.headers['user-agent'],
+    ip_address: ip.split(',')[0].trim(), // Take first IP if multiple
+    user_agent: userAgent,
     referrer: referrer,
     clicked_at: new Date().toISOString()
   };
+
+  // Debug logging for IP detection
+  console.log(`Click tracked for link ${link.short_code}:`, {
+    ip: ip.split(',')[0].trim(),
+    userAgent: userAgent.substring(0, 50) + '...',
+    referrer: referrer.substring(0, 50) + '...',
+    totalClicks: link.total_clicks + 1
+  });
 
   clicks.push(newClick);
   link.total_clicks = (link.total_clicks || 0) + 1;
@@ -146,13 +161,19 @@ app.get('/api/links/:id/analytics', (req, res) => {
 
   const linkClicks = clicks.filter(c => c.link_id === id);
   
-  // Calculate analytics
+  // Calculate analytics with better unique visitor detection
   const totalClicks = linkClicks.length;
-  const uniqueIPs = new Set(linkClicks.map(click => click.ip_address)).size;
+  
+  // Get unique IPs, filtering out 'unknown' and empty values
+  const uniqueIPs = new Set(
+    linkClicks
+      .map(click => click.ip_address)
+      .filter(ip => ip && ip !== 'unknown' && ip !== '')
+  ).size;
   
   // Top referrers
   const referrers = linkClicks
-    .filter(click => click.referrer)
+    .filter(click => click.referrer && click.referrer !== '')
     .reduce((acc, click) => {
       try {
         const domain = new URL(click.referrer).hostname;
